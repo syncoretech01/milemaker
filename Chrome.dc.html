@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:absolute; left:0; top:0; width:260px; height:100%; background:var(--mm-surface-flat); border-right:1px solid var(--mm-bd); display:flex; flex-direction:column; font-family:Manrope,Inter,sans-serif; box-sizing:border-box;">
+  <div style="padding:22px 20px 18px 20px; border-bottom:1px solid var(--mm-bd-faint);">
+    <div style="display:flex; align-items:center; gap:9px;">
+      <i data-lucide="waypoints" style="color:var(--mm-accent);"></i>
+      <span style="color:var(--mm-text); font-size:17px; font-weight:600; letter-spacing:-0.02em;">MileMaker</span>
+    </div>
+    <div style="margin-top:14px; display:inline-flex; align-items:center; gap:7px; padding:5px 10px; background:var(--mm-surface2); border:1px solid var(--mm-bd); border-radius:7px;">
+      <span style="width:5px; height:5px; border-radius:50%; background:var(--mm-accent); display:inline-block;"></span>
+      <span style="color:var(--mm-text2); font-size:11px; font-weight:500; letter-spacing:0.03em;">Tradehome Pilot</span>
+    </div>
+  </div>
+  <nav style="flex:1; padding:14px 12px; display:flex; flex-direction:column; gap:2px;">
+    <sc-for list="{{ nav }}" as="item" hint-placeholder-count="9">
+      <div style="{{ item.rowStyle }}">
+        <span style="{{ item.accentStyle }}"></span>
+        <i data-lucide="{{ item.icon }}"></i>
+        <span style="font-size:13px; font-weight:500;">{{ item.label }}</span>
+      </div>
+    </sc-for>
+  </nav>
+  <div style="padding:14px 16px; border-top:1px solid var(--mm-bd-faint); display:flex; align-items:center; gap:11px;">
+    <div style="width:34px; height:34px; border-radius:50%; background:var(--mm-surface3); border:1px solid var(--mm-bd-1); display:flex; align-items:center; justify-content:center; color:var(--mm-text2); font-size:12px; font-weight:600; letter-spacing:0.02em; font-family:'Geist Mono','JetBrains Mono',monospace;">DM</div>
+    <div style="display:flex; flex-direction:column; gap:1px;">
+      <span style="color:var(--mm-text); font-size:13px; font-weight:500;">Doug Marsh</span>
+      <span style="color:var(--mm-text3); font-size:11px; letter-spacing:0.02em;">PDS · Pilot Lead</span>
+    </div>
+  </div>
+</div>
+<div style="position:absolute; left:260px; top:0; right:0; height:64px; border-bottom:1px solid var(--mm-bd); background:var(--mm-bg); display:flex; align-items:center; justify-content:space-between; padding:0 28px; box-sizing:border-box; font-family:Manrope,Inter,sans-serif;">
+  <div style="display:flex; flex-direction:column; gap:2px;">
+    <span class="mm-display" style="color:var(--mm-text); font-size:17px; font-weight:600;">{{ title }}</span>
+    <span style="color:var(--mm-text3); font-size:11.5px; letter-spacing:0.01em;">{{ context }}</span>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div style="display:flex; align-items:center; gap:9px; padding:6px 11px; background:var(--mm-surface-flat); border:1px solid var(--mm-bd); border-radius:8px;" title="Switch theme">
+      <span style="color:var(--mm-text3); font-size:10px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase;">Theme</span>
+      <sc-for list="{{ themes }}" as="t" hint-placeholder-count="3">
+        <span onClick="{{ t.onClick }}" title="{{ t.name }}" style="{{ t.style }}"></span>
+      </sc-for>
+      <span style="width:1px; height:14px; background:var(--mm-bd-1);"></span>
+      <span onClick="{{ lightToggle.onClick }}" title="Light base" style="{{ lightToggle.style }}"></span>
+    </div>
+    <div style="display:flex; align-items:center; gap:2px; padding:3px; background:var(--mm-surface-flat); border:1px solid var(--mm-bd); border-radius:8px;" title="Device">
+      <span onClick="{{ deviceDesktop.onClick }}" style="{{ deviceDesktop.style }}"><i data-lucide="monitor"></i>{{ deviceDesktop.label }}</span>
+      <span onClick="{{ deviceMobile.onClick }}" style="{{ deviceMobile.style }}"><i data-lucide="smartphone"></i>{{ deviceMobile.label }}</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; padding:7px 12px; background:var(--mm-surface-flat); border:1px solid var(--mm-bd); border-radius:8px; color:var(--mm-text2); font-size:12px; font-weight:500; font-family:'Geist Mono','JetBrains Mono',monospace;">
+      <i data-lucide="calendar" style="color:var(--mm-text3);"></i>
+      <span>{{ dateRange }}</span>
+      <i data-lucide="chevron-down" style="color:var(--mm-text3);"></i>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; padding:7px 12px; width:180px; background:var(--mm-surface-flat); border:1px solid var(--mm-bd); border-radius:8px; color:var(--mm-text3); font-size:12.5px;">
+      <i data-lucide="search" style="color:var(--mm-text3);"></i>
+      <span>Search</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:7px; padding:7px 12px; background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.24); border-radius:999px; color:#34D399; font-size:12px; font-weight:600;">
+      <span style="width:6px; height:6px; border-radius:50%; background:#34D399; display:inline-block; animation:mm-livedot 2s ease-in-out infinite;"></span>
+      Pilot · Active
+    </div>
+    <div style="width:36px; height:36px; border-radius:8px; background:var(--mm-surface-flat); border:1px solid var(--mm-bd); display:flex; align-items:center; justify-content:center; color:var(--mm-text2); position:relative;">
+      <i data-lucide="bell"></i>
+      <span style="position:absolute; top:8px; right:9px; width:6px; height:6px; border-radius:50%; background:var(--mm-accent);"></span>
+    </div>
+    <div style="width:36px; height:36px; border-radius:50%; background:var(--mm-surface3); border:1px solid var(--mm-bd-1); display:flex; align-items:center; justify-content:center; color:var(--mm-text2); font-size:12px; font-weight:600; font-family:'Geist Mono','JetBrains Mono',monospace;">DM</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1024},&quot;active&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;dashboard&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Pilot overview&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;context&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Tradehome × MileMaker Pilot&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;dateRange&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Last 30 days&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { theme: 'primary', light: false };
+  pick(id) {
+    if (id === 'light') {
+      const nl = !this.state.light;
+      document.documentElement.setAttribute('data-mm-base', nl ? 'light' : '');
+      try { localStorage.setItem('mm-base', nl ? 'light' : ''); } catch (_) {}
+      this.setState({ light: nl });
+      return;
+    }
+    document.documentElement.setAttribute('data-mm-theme', id === 'primary' ? '' : id);
+    const names = { primary: 'Signal Gold', arctic: 'Arctic', aurora: 'Aurora', nebula: 'Nebula', ember: 'Ember' };
+    try {
+      const isLight = document.documentElement.getAttribute('data-mm-base') === 'light';
+      localStorage.setItem('mm-theme', (isLight ? 'Light + ' : '') + (names[id] || 'Signal Gold'));
+    } catch (_) {}
+    this.setState({ theme: id });
+  }
+  renderVals() {
+    const active = this.props.active ?? '';
+    const cur = this.state.theme;
+    const themeDefs = [
+      { id: 'primary', color: '#F2B84B', name: 'Signal Gold' },
+      { id: 'arctic', color: '#38BDF8', name: 'Arctic' },
+      { id: 'aurora', color: '#2DD4BF', name: 'Aurora' },
+      { id: 'nebula', color: '#A78BFA', name: 'Nebula' },
+      { id: 'ember', color: '#FB7185', name: 'Ember' },
+    ];
+    const themes = themeDefs.map(t => ({
+      name: t.name,
+      onClick: () => this.pick(t.id),
+      style: {
+        width: '13px', height: '13px', borderRadius: '50%', background: t.color, cursor: 'pointer',
+        boxSizing: 'border-box',
+        border: cur === t.id ? '2px solid #F4F5F6' : '2px solid transparent',
+        boxShadow: cur === t.id ? '0 0 10px ' + t.color + '99' : 'none',
+        transition: 'all 0.15s ease',
+      },
+    }));
+    const lightOn = this.state.light;
+    const lightToggle = {
+      onClick: () => this.pick('light'),
+      style: {
+        width: '13px', height: '13px', borderRadius: '4px', cursor: 'pointer', boxSizing: 'border-box',
+        background: lightOn ? '#FFFFFF' : 'transparent',
+        border: lightOn ? '2px solid #FFFFFF' : '1.5px solid rgba(255,255,255,0.35)',
+        boxShadow: lightOn ? '0 0 10px rgba(255,255,255,0.6)' : 'none',
+        transition: 'all 0.15s ease',
+      },
+    };
+    const defs = [
+      { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
+      { id: 'stores', label: 'Stores', icon: 'store' },
+      { id: 'planner', label: 'Route Planner', icon: 'route' },
+      { id: 'activeroutes', label: 'Active Routes', icon: 'truck' },
+      { id: 'cost', label: 'Cost Comparison', icon: 'circle-dollar-sign' },
+      { id: 'tracking', label: 'Tracking', icon: 'map-pin' },
+      { id: 'results', label: 'Pilot Results', icon: 'bar-chart-3' },
+      { id: 'carriers', label: 'Carriers', icon: 'building-2' },
+      { id: 'settings', label: 'Settings', icon: 'settings' },
+    ];
+    const nav = defs.map(d => {
+      const on = d.id === active;
+      return {
+        icon: d.icon,
+        label: d.label,
+        rowStyle: {
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '11px',
+          padding: '9px 12px 9px 14px',
+          borderRadius: '8px',
+          color: on ? 'var(--mm-accent)' : '#9AA0A8',
+          background: on ? '#191D24' : 'transparent',
+          boxShadow: on ? '0 0 16px rgba(var(--mm-accent-rgb),0.14)' : 'none',
+          cursor: 'pointer',
+        },
+        accentStyle: {
+          position: 'absolute',
+          left: '0',
+          top: '8px',
+          bottom: '8px',
+          width: '2px',
+          borderRadius: '2px',
+          background: on ? 'var(--mm-accent)' : 'transparent',
+          display: 'block',
+        },
+      };
+    });
+    const setDevice = (mode) => { try { if (window.__mmDevice) window.__mmDevice(mode); } catch (_) {} };
+    const deviceSeg = (mode, label) => ({
+      onClick: () => setDevice(mode),
+      style: {
+        padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer',
+        color: '#9AA0A8', background: 'transparent', transition: 'all .15s ease', display: 'flex', alignItems: 'center', gap: '5px',
+      },
+      label,
+    });
+    return {
+      nav,
+      themes,
+      lightToggle,
+      deviceDesktop: deviceSeg('desktop', 'Desktop'),
+      deviceMobile: deviceSeg('mobile', 'Mobile'),
+      title: this.props.title ?? 'Dashboard',
+      context: this.props.context ?? 'Tradehome × MileMaker Pilot',
+      dateRange: this.props.dateRange ?? 'Last 30 days',
+    };
+  }
+}
+</script>
+</body>
+</html>
