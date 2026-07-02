@@ -3,13 +3,598 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MileMaker - Prototype Canvas</title>
-  <meta name="robots" content="noindex">
-  <meta http-equiv="refresh" content="0; url=./MileMaker.dc.html">
-  <script>window.location.replace("./MileMaker.dc.html" + window.location.search + window.location.hash);</script>
+  <title>MileMaker - Prototype Presentation</title>
+  <meta name="description" content="MileMaker logistics optimization prototype and interface canvas.">
+  <meta name="theme-color" content="#080a0d">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <style>
+    :root {
+      --accent: #f2b84b;
+      --accent-rgb: 242, 184, 75;
+      --canvas: #07090c;
+      --surface: #0d1015;
+      --surface-2: #141820;
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #f4f5f6;
+      --muted: #9298a2;
+      --quiet: #626975;
+      --panel: #d7d8da;
+      --panel-text: #1b1d21;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--canvas); color: var(--text); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--canvas);
+      color: var(--text);
+      font-family: Manrope, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, select, a { font: inherit; }
+    button, select { letter-spacing: 0; }
+    a { color: inherit; }
+
+    .app-shell { min-height: 100vh; background: var(--canvas); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      min-height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 14px 24px;
+      background: rgba(7, 9, 12, 0.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      color: #111318;
+      background: var(--accent);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(var(--accent-rgb), 0.18);
+    }
+    .brand-mark svg { width: 21px; height: 21px; }
+    .brand-copy { min-width: 0; }
+    .brand-kicker {
+      margin: 0 0 3px;
+      color: var(--accent);
+      font-family: "Geist Mono", monospace;
+      font-size: 10px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    .brand-title {
+      margin: 0;
+      font-family: "Space Grotesk", Manrope, sans-serif;
+      font-size: 20px;
+      line-height: 1.1;
+      font-weight: 600;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+    .settings-readout {
+      max-width: 340px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--muted);
+      font-family: "Geist Mono", monospace;
+      font-size: 10px;
+    }
+    .action-button {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+    }
+    .action-button:hover { border-color: rgba(var(--accent-rgb), 0.6); color: var(--accent); }
+    .action-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .action-button svg { width: 16px; height: 16px; }
+    .action-button.primary { background: var(--accent); color: #111318; border-color: var(--accent); }
+    .action-button.primary:hover { background: #ffd071; color: #111318; }
+
+    .canvas-section { min-height: calc(100vh - 78px); }
+    .canvas-bar {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 10px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: #090c10;
+    }
+    .canvas-label { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      flex: none;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1);
+    }
+    .canvas-name { font-size: 12px; font-weight: 600; }
+    .canvas-meta {
+      color: var(--quiet);
+      font-family: "Geist Mono", monospace;
+      font-size: 10px;
+      text-align: right;
+    }
+    .canvas-viewport {
+      position: relative;
+      width: 100%;
+      height: clamp(650px, calc(100vh - 126px), 920px);
+      min-height: 650px;
+      background: #05070a;
+      overflow: hidden;
+    }
+    .canvas-viewport iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #07090c;
+    }
+    .canvas-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      background: #07090c;
+      color: var(--muted);
+      font-family: "Geist Mono", monospace;
+      font-size: 11px;
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+    .canvas-loading[data-ready="true"] { opacity: 0; visibility: hidden; }
+    .loading-inner { display: flex; align-items: center; gap: 10px; }
+    .loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.16);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 700ms linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .site-footer {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 32px;
+      padding: 30px 24px 34px;
+      border-top: 1px solid var(--line);
+      background: #090c10;
+    }
+    .footer-brand { display: flex; align-items: flex-start; gap: 12px; max-width: 620px; }
+    .footer-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border: 1px solid rgba(var(--accent-rgb), 0.45);
+      border-radius: 8px;
+      color: var(--accent);
+    }
+    .footer-mark svg { width: 17px; height: 17px; }
+    .footer-title { margin: 0 0 5px; font-size: 14px; font-weight: 600; }
+    .footer-copy { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .footer-side { text-align: right; }
+    .syncore-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--accent);
+      font-family: "Geist Mono", monospace;
+      font-size: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    .syncore-link:hover { color: #ffd071; }
+    .syncore-link svg { width: 14px; height: 14px; }
+    .copyright { margin-top: 9px; color: var(--quiet); font-size: 10px; line-height: 1.5; }
+
+    .tweaks-panel {
+      position: fixed;
+      top: 94px;
+      right: 24px;
+      z-index: 300;
+      width: min(350px, calc(100vw - 32px));
+      padding: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.28);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--panel-text);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+    }
+    .tweaks-panel[data-open="true"] { opacity: 1; visibility: visible; transform: translateY(0); }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .panel-title { margin: 0; font-size: 15px; font-weight: 600; }
+    .icon-button {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: #5f6268;
+      cursor: pointer;
+    }
+    .icon-button:hover { background: rgba(0, 0, 0, 0.08); color: #1b1d21; }
+    .icon-button:focus-visible { outline: 2px solid #1b1d21; outline-offset: 2px; }
+    .icon-button svg { width: 17px; height: 17px; }
+    .panel-section-title { margin: 18px 0 14px; color: #62656b; font-size: 13px; font-weight: 600; }
+    .field { margin-top: 12px; }
+    .field label { display: block; margin-bottom: 6px; color: #56595f; font-size: 12px; font-weight: 600; text-transform: lowercase; }
+    .select-wrap { position: relative; }
+    .select-wrap select {
+      width: 100%;
+      height: 38px;
+      appearance: none;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 7px;
+      background: #fff;
+      color: #22252a;
+      padding: 0 38px 0 11px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .select-wrap select:focus-visible { outline: 2px solid #1e63c7; outline-offset: 2px; }
+    .select-wrap select option { background: #fff; color: #22252a; }
+    .select-wrap svg {
+      position: absolute;
+      top: 50%;
+      right: 11px;
+      width: 17px;
+      height: 17px;
+      color: #7a7d82;
+      pointer-events: none;
+      transform: translateY(-50%);
+    }
+    .device-control {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 3px;
+      padding: 3px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    .device-button {
+      min-width: 0;
+      height: 34px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #292b30;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .device-button[aria-pressed="true"] { background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16); font-weight: 600; }
+    .device-button:focus-visible { outline: 2px solid #1e63c7; outline-offset: 1px; }
+    .panel-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(0, 0, 0, 0.1); }
+    .theme-preview { display: flex; align-items: center; gap: 8px; min-width: 0; color: #65686e; font-size: 10px; }
+    .theme-swatch { width: 12px; height: 12px; flex: none; border-radius: 50%; background: var(--accent); border: 1px solid rgba(0, 0, 0, 0.18); }
+    .reset-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 0;
+      background: transparent;
+      color: #4d5056;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .reset-button:hover { color: #17191d; }
+    .reset-button svg { width: 14px; height: 14px; }
+
+    @media (max-width: 820px) {
+      .topbar { align-items: flex-start; flex-direction: column; padding: 14px 16px; }
+      .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+      .settings-readout { order: 3; width: 100%; max-width: none; }
+      .canvas-bar { padding-inline: 16px; }
+      .canvas-meta { display: none; }
+      .canvas-viewport { height: 680px; min-height: 680px; }
+      .site-footer { flex-direction: column; padding-inline: 16px; }
+      .footer-side { text-align: left; }
+      .tweaks-panel { top: auto; right: 12px; bottom: 12px; left: 12px; width: auto; max-height: calc(100vh - 24px); overflow-y: auto; }
+    }
+  </style>
 </head>
 <body>
-  <a href="./MileMaker.dc.html">Open the MileMaker prototype</a>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><i data-lucide="waypoints"></i></div>
+        <div class="brand-copy">
+          <p class="brand-kicker">Tradehome Pilot · Product Prototype</p>
+          <h1 class="brand-title">MileMaker Interface Canvas</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="settingsReadout" class="settings-readout">Signal Gold · Space Grotesk · Both</span>
+        <button id="tweaksButton" class="action-button primary" type="button" aria-controls="tweaksPanel" aria-expanded="true">
+          <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+          Tweaks
+        </button>
+        <a id="fullCanvasLink" class="action-button" href="./MileMaker.dc.html" target="_blank" rel="noopener noreferrer">
+          <i data-lucide="maximize-2" aria-hidden="true"></i>
+          Full canvas
+        </a>
+      </div>
+    </header>
+
+    <main class="canvas-section">
+      <div class="canvas-bar">
+        <div class="canvas-label">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span class="canvas-name">Prototype canvas</span>
+        </div>
+        <div class="canvas-meta">Desktop + mobile flows · Interactive states · Live appearance controls</div>
+      </div>
+      <div class="canvas-viewport">
+        <div id="canvasLoading" class="canvas-loading">
+          <div class="loading-inner"><span class="loading-spinner" aria-hidden="true"></span>Loading MileMaker canvas</div>
+        </div>
+        <iframe id="prototypeFrame" title="MileMaker prototype canvas" src="./MileMaker.dc.html"></iframe>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <div class="footer-mark" aria-hidden="true"><i data-lucide="waypoints"></i></div>
+        <div>
+          <p class="footer-title">MileMaker · Logistics Optimization Pilot</p>
+          <p class="footer-copy">Prototype presentation covering route planning, tracking, cost comparison, pilot results, and operational views.</p>
+        </div>
+      </div>
+      <div class="footer-side">
+        <a class="syncore-link" href="https://syncoretech.com/" target="_blank" rel="noopener noreferrer">
+          Site by Syncore Tech
+          <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+        </a>
+        <div class="copyright">© 2026 MileMaker. Prototype presentation.</div>
+      </div>
+    </footer>
+  </div>
+
+  <aside id="tweaksPanel" class="tweaks-panel" data-open="true" aria-label="Prototype tweaks">
+    <div class="panel-header">
+      <h2 class="panel-title">Tweaks</h2>
+      <button id="closeTweaks" class="icon-button" type="button" aria-label="Close tweaks"><i data-lucide="x"></i></button>
+    </div>
+    <div class="panel-section-title">Appearance</div>
+
+    <div class="field">
+      <label for="themeSelect">theme</label>
+      <div class="select-wrap">
+        <select id="themeSelect">
+          <option>Signal Gold</option>
+          <option>Arctic</option>
+          <option>Aurora</option>
+          <option>Nebula</option>
+          <option>Ember</option>
+          <option>Light</option>
+          <option>Light + Gold</option>
+          <option>Light + Aurora</option>
+          <option>Light + Arctic</option>
+          <option>Light + Nebula</option>
+          <option>Light + Ember</option>
+        </select>
+        <i data-lucide="chevron-down" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="displaySelect">display</label>
+      <div class="select-wrap">
+        <select id="displaySelect">
+          <option>Space Grotesk</option>
+          <option>Instrument Serif</option>
+          <option>Fraunces</option>
+          <option>Neo-grotesk</option>
+          <option>Techno</option>
+          <option>Sora</option>
+          <option>Outfit</option>
+          <option>Plus Jakarta</option>
+          <option>DM Sans</option>
+        </select>
+        <i data-lucide="chevron-down" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>device</label>
+      <div id="deviceControl" class="device-control" role="group" aria-label="Device view">
+        <button class="device-button" type="button" data-device="Both" aria-pressed="true">Both</button>
+        <button class="device-button" type="button" data-device="Desktop" aria-pressed="false">Desktop</button>
+        <button class="device-button" type="button" data-device="Mobile" aria-pressed="false">Mobile</button>
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <div class="theme-preview"><span id="themeSwatch" class="theme-swatch"></span><span id="themeLabel">Signal Gold</span></div>
+      <button id="resetTweaks" class="reset-button" type="button"><i data-lucide="rotate-ccw"></i>Reset</button>
+    </div>
+  </aside>
+
+  <script>
+    (function () {
+      const DEFAULTS = { theme: "Signal Gold", display: "Space Grotesk", device: "Both" };
+      const THEME_MAP = {
+        "Signal Gold": { accent: "", base: "", color: "#F2B84B" },
+        "Arctic": { accent: "arctic", base: "", color: "#38BDF8" },
+        "Aurora": { accent: "aurora", base: "", color: "#2DD4BF" },
+        "Nebula": { accent: "nebula", base: "", color: "#A78BFA" },
+        "Ember": { accent: "ember", base: "", color: "#FB7185" },
+        "Light": { accent: "", base: "light", color: "#F2B84B" },
+        "Light + Gold": { accent: "", base: "light", color: "#F2B84B" },
+        "Light + Aurora": { accent: "aurora", base: "light", color: "#2DD4BF" },
+        "Light + Arctic": { accent: "arctic", base: "light", color: "#38BDF8" },
+        "Light + Nebula": { accent: "nebula", base: "light", color: "#A78BFA" },
+        "Light + Ember": { accent: "ember", base: "light", color: "#FB7185" }
+      };
+      const FONT_MAP = {
+        "Space Grotesk": "'Space Grotesk', 'Manrope', sans-serif",
+        "Instrument Serif": "'Instrument Serif', Fraunces, serif",
+        "Fraunces": "Fraunces, 'Instrument Serif', serif",
+        "Neo-grotesk": "'General Sans', 'Satoshi', 'Manrope', sans-serif",
+        "Techno": "'Clash Display', 'Space Grotesk', sans-serif",
+        "Sora": "'Sora', 'Manrope', sans-serif",
+        "Outfit": "'Outfit', 'Manrope', sans-serif",
+        "Plus Jakarta": "'Plus Jakarta Sans', 'Manrope', sans-serif",
+        "DM Sans": "'DM Sans', 'Manrope', sans-serif"
+      };
+      const STORAGE_KEY = "milemaker-presentation-settings";
+      const frame = document.getElementById("prototypeFrame");
+      const loading = document.getElementById("canvasLoading");
+      const panel = document.getElementById("tweaksPanel");
+      const tweaksButton = document.getElementById("tweaksButton");
+      const closeTweaks = document.getElementById("closeTweaks");
+      const themeSelect = document.getElementById("themeSelect");
+      const displaySelect = document.getElementById("displaySelect");
+      const settingsReadout = document.getElementById("settingsReadout");
+      const fullCanvasLink = document.getElementById("fullCanvasLink");
+      const themeSwatch = document.getElementById("themeSwatch");
+      const themeLabel = document.getElementById("themeLabel");
+      const deviceButtons = Array.from(document.querySelectorAll(".device-button"));
+      let state = loadState();
+
+      function loadState() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+          return {
+            theme: THEME_MAP[saved.theme] ? saved.theme : DEFAULTS.theme,
+            display: FONT_MAP[saved.display] ? saved.display : DEFAULTS.display,
+            device: ["Both", "Desktop", "Mobile"].includes(saved.device) ? saved.device : DEFAULTS.device
+          };
+        } catch (_) {
+          return { ...DEFAULTS };
+        }
+      }
+
+      function saveState() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+      }
+
+      function sourceUrl() {
+        const params = new URLSearchParams({ theme: state.theme, display: state.display, device: state.device });
+        return "./MileMaker.dc.html?" + params.toString();
+      }
+
+      function setPanel(open) {
+        panel.dataset.open = String(open);
+        tweaksButton.setAttribute("aria-expanded", String(open));
+      }
+
+      function updatePresentationUi() {
+        themeSelect.value = state.theme;
+        displaySelect.value = state.display;
+        deviceButtons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.device === state.device)));
+        settingsReadout.textContent = state.theme + " · " + state.display + " · " + state.device;
+        fullCanvasLink.href = sourceUrl();
+        const theme = THEME_MAP[state.theme] || THEME_MAP[DEFAULTS.theme];
+        themeSwatch.style.background = theme.color;
+        themeLabel.textContent = state.theme;
+        document.documentElement.style.setProperty("--accent", theme.color);
+        const rgb = theme.color.match(/[A-Fa-f0-9]{2}/g);
+        if (rgb) document.documentElement.style.setProperty("--accent-rgb", rgb.map((value) => parseInt(value, 16)).join(", "));
+      }
+
+      function applyDevice(doc) {
+        const groups = Array.from(doc.querySelectorAll("[data-mm-group]"));
+        groups.forEach((group) => {
+          const kind = group.getAttribute("data-mm-group");
+          const show = state.device === "Both" || (state.device === "Desktop" && kind === "desktop") || (state.device === "Mobile" && kind === "mobile");
+          group.style.display = show ? "" : "none";
+        });
+      }
+
+      function applyToFrame() {
+        try {
+          const win = frame.contentWindow;
+          const doc = frame.contentDocument;
+          if (!win || !doc || !doc.documentElement) return;
+          const theme = THEME_MAP[state.theme] || THEME_MAP[DEFAULTS.theme];
+          doc.documentElement.setAttribute("data-mm-theme", theme.accent);
+          doc.documentElement.setAttribute("data-mm-base", theme.base);
+          doc.documentElement.style.setProperty("--mm-display", FONT_MAP[state.display] || FONT_MAP[DEFAULTS.display]);
+          try {
+            win.localStorage.setItem("mm-theme", state.theme);
+            win.localStorage.setItem("mm-font", state.display);
+            win.localStorage.setItem("mm-device", state.device);
+            win.localStorage.setItem("mm-base", theme.base);
+          } catch (_) {}
+          applyDevice(doc);
+        } catch (_) {}
+      }
+
+      function applySettings() {
+        saveState();
+        updatePresentationUi();
+        applyToFrame();
+        window.setTimeout(applyToFrame, 350);
+        window.setTimeout(applyToFrame, 1100);
+      }
+
+      themeSelect.addEventListener("change", () => { state.theme = themeSelect.value; applySettings(); });
+      displaySelect.addEventListener("change", () => { state.display = displaySelect.value; applySettings(); });
+      deviceButtons.forEach((button) => button.addEventListener("click", () => { state.device = button.dataset.device; applySettings(); }));
+      tweaksButton.addEventListener("click", () => setPanel(panel.dataset.open !== "true"));
+      closeTweaks.addEventListener("click", () => setPanel(false));
+      document.getElementById("resetTweaks").addEventListener("click", () => { state = { ...DEFAULTS }; applySettings(); });
+      window.addEventListener("keydown", (event) => { if (event.key === "Escape") setPanel(false); });
+
+      frame.src = sourceUrl();
+      frame.addEventListener("load", () => {
+        loading.dataset.ready = "true";
+        applyToFrame();
+        window.setTimeout(applyToFrame, 500);
+        window.setTimeout(applyToFrame, 1600);
+      });
+
+      updatePresentationUi();
+      window.addEventListener("load", () => {
+        if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.8 } });
+      });
+    })();
+  </script>
 </body>
 </html>
 

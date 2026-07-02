@@ -2733,8 +2733,9 @@ class Component extends DCLogic {
       'DM Sans': "'DM Sans', 'Manrope', sans-serif",
     };
     const saved = (k, d) => { try { return localStorage.getItem(k) || d; } catch (_) { return d; } };
-    const theme = this.props.theme ?? saved('mm-theme', 'Signal Gold');
-    const font = this.props.display ?? saved('mm-font', 'Space Grotesk');
+    const params = new URLSearchParams(window.location.search);
+    const theme = params.get('theme') || this.props.theme || saved('mm-theme', 'Signal Gold');
+    const font = params.get('display') || this.props.display || saved('mm-font', 'Space Grotesk');
     let base = '', accentName = theme;
     if (/^light/i.test(theme)) {
       base = 'light';
@@ -2742,12 +2743,12 @@ class Component extends DCLogic {
       if (accentName === 'Light') accentName = 'Signal Gold';
     }
     // if the theme prop wasn't an explicit "Light + …", respect a separately-saved base
-    if (!/^light/i.test(theme)) { base = saved('mm-base', ''); }
+    if (!/^light/i.test(theme)) { base = params.has('theme') ? '' : saved('mm-base', ''); }
     document.documentElement.setAttribute('data-mm-theme', accentMap[accentName] ?? '');
     document.documentElement.setAttribute('data-mm-base', base);
     document.documentElement.style.setProperty('--mm-display', fontMap[font] || fontMap['Space Grotesk']);
-    try { localStorage.setItem('mm-theme', theme); localStorage.setItem('mm-font', font); } catch (_) {}
-    const device = this.props.device ?? saved('mm-device', 'Both');
+    try { localStorage.setItem('mm-theme', theme); localStorage.setItem('mm-font', font); localStorage.setItem('mm-base', base); } catch (_) {}
+    const device = params.get('device') || this.props.device || saved('mm-device', 'Both');
     this.applyDeviceView(device, false);
   }
   tagGroups() {
