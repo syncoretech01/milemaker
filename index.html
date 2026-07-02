@@ -146,11 +146,47 @@
       font-size: 10px;
       text-align: right;
     }
+    .canvas-actions { display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
+    .zoom-controls {
+      display: inline-flex;
+      align-items: center;
+      flex: none;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    .zoom-button,
+    .zoom-fit {
+      height: 30px;
+      display: inline-grid;
+      place-items: center;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .zoom-button { width: 30px; }
+    .zoom-fit {
+      min-width: 66px;
+      padding: 0 8px;
+      color: var(--text);
+      font-family: "Geist Mono", monospace;
+      font-size: 9px;
+      font-weight: 600;
+    }
+    .zoom-button:hover,
+    .zoom-fit:hover { background: var(--surface-2); color: var(--accent); }
+    .zoom-button:focus-visible,
+    .zoom-fit:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .zoom-button:disabled { opacity: 0.35; cursor: default; }
+    .zoom-button svg { width: 14px; height: 14px; }
     .canvas-viewport {
       position: relative;
       width: 100%;
-      height: clamp(650px, calc(100vh - 126px), 920px);
-      min-height: 650px;
+      height: clamp(620px, calc(100vh - 126px), 900px);
+      min-height: 620px;
       background: #05070a;
       overflow: hidden;
     }
@@ -218,7 +254,6 @@
       font-size: 10px;
       font-weight: 600;
       text-decoration: none;
-      text-transform: uppercase;
     }
     .syncore-link:hover { color: #ffd071; }
     .syncore-link svg { width: 14px; height: 14px; }
@@ -226,7 +261,7 @@
 
     .tweaks-panel {
       position: fixed;
-      top: 94px;
+      top: 138px;
       right: 24px;
       z-index: 300;
       width: min(350px, calc(100vw - 32px));
@@ -330,7 +365,8 @@
       .settings-readout { order: 3; width: 100%; max-width: none; }
       .canvas-bar { padding-inline: 16px; }
       .canvas-meta { display: none; }
-      .canvas-viewport { height: 680px; min-height: 680px; }
+      .canvas-actions { gap: 0; }
+      .canvas-viewport { height: clamp(560px, calc(100vh - 172px), 700px); min-height: 560px; }
       .site-footer { flex-direction: column; padding-inline: 16px; }
       .footer-side { text-align: left; }
       .tweaks-panel { top: auto; right: 12px; bottom: 12px; left: 12px; width: auto; max-height: calc(100vh - 24px); overflow-y: auto; }
@@ -366,7 +402,14 @@
           <span class="live-dot" aria-hidden="true"></span>
           <span class="canvas-name">Prototype canvas</span>
         </div>
-        <div class="canvas-meta">Desktop + mobile flows · Interactive states · Live appearance controls</div>
+        <div class="canvas-actions">
+          <div class="canvas-meta">Desktop + mobile flows · Interactive states · Live appearance controls</div>
+          <div class="zoom-controls" role="group" aria-label="Canvas zoom">
+            <button id="zoomOut" class="zoom-button" type="button" aria-label="Zoom out" title="Zoom out"><i data-lucide="minus"></i></button>
+            <button id="zoomFit" class="zoom-fit" type="button" aria-label="Fit canvas to viewport" title="Fit canvas to viewport">Fit</button>
+            <button id="zoomIn" class="zoom-button" type="button" aria-label="Zoom in" title="Zoom in"><i data-lucide="plus"></i></button>
+          </div>
+        </div>
       </div>
       <div class="canvas-viewport">
         <div id="canvasLoading" class="canvas-loading">
@@ -386,7 +429,7 @@
       </div>
       <div class="footer-side">
         <a class="syncore-link" href="https://syncoretech.com/" target="_blank" rel="noopener noreferrer">
-          Site by Syncore Tech
+          By Syncore
           <i data-lucide="arrow-up-right" aria-hidden="true"></i>
         </a>
         <div class="copyright">© 2026 MileMaker. Prototype presentation.</div>
@@ -494,7 +537,13 @@
       const themeSwatch = document.getElementById("themeSwatch");
       const themeLabel = document.getElementById("themeLabel");
       const deviceButtons = Array.from(document.querySelectorAll(".device-button"));
+      const zoomOut = document.getElementById("zoomOut");
+      const zoomFit = document.getElementById("zoomFit");
+      const zoomIn = document.getElementById("zoomIn");
       let state = loadState();
+      let zoomMode = "fit";
+      let currentZoom = 1;
+      let manualZoom = 1;
 
       function loadState() {
         try {
@@ -546,7 +595,38 @@
         });
       }
 
-      function applyToFrame() {
+      function fitZoom() {
+        const availableWidth = Math.max(frame.clientWidth - 40, 280);
+        const availableHeight = Math.max(frame.clientHeight - 40, 420);
+        const compact = frame.clientWidth < 700;
+        const targetWidth = state.device === "Mobile" ? (compact ? 500 : 1320) : 1536;
+        const targetHeight = state.device === "Mobile" ? 1120 : 1160;
+        return Math.max(0.2, Math.min(1, availableWidth / targetWidth, availableHeight / targetHeight));
+      }
+
+      function updateZoomUi() {
+        const percent = Math.round(currentZoom * 100);
+        zoomFit.textContent = zoomMode === "fit" ? "Fit " + percent + "%" : percent + "%";
+        zoomOut.disabled = currentZoom <= 0.2;
+        zoomIn.disabled = currentZoom >= 1.25;
+      }
+
+      function applyZoom(doc, resetScroll) {
+        if (!doc || !doc.body) return;
+        currentZoom = zoomMode === "fit" ? fitZoom() : manualZoom;
+        doc.body.style.zoom = String(currentZoom);
+        doc.documentElement.style.overflow = "auto";
+        updateZoomUi();
+        if (resetScroll && frame.contentWindow) frame.contentWindow.scrollTo(0, 0);
+      }
+
+      function setManualZoom(nextZoom) {
+        zoomMode = "manual";
+        manualZoom = Math.max(0.2, Math.min(1.25, nextZoom));
+        applyToFrame(false);
+      }
+
+      function applyToFrame(resetScroll) {
         try {
           const win = frame.contentWindow;
           const doc = frame.contentDocument;
@@ -562,20 +642,28 @@
             win.localStorage.setItem("mm-base", theme.base);
           } catch (_) {}
           applyDevice(doc);
+          applyZoom(doc, Boolean(resetScroll));
         } catch (_) {}
       }
 
-      function applySettings() {
+      function applySettings(resetCanvas) {
         saveState();
         updatePresentationUi();
-        applyToFrame();
-        window.setTimeout(applyToFrame, 350);
-        window.setTimeout(applyToFrame, 1100);
+        applyToFrame(Boolean(resetCanvas));
+        window.setTimeout(() => applyToFrame(false), 350);
+        window.setTimeout(() => applyToFrame(false), 1100);
       }
 
       themeSelect.addEventListener("change", () => { state.theme = themeSelect.value; applySettings(); });
       displaySelect.addEventListener("change", () => { state.display = displaySelect.value; applySettings(); });
-      deviceButtons.forEach((button) => button.addEventListener("click", () => { state.device = button.dataset.device; applySettings(); }));
+      deviceButtons.forEach((button) => button.addEventListener("click", () => {
+        state.device = button.dataset.device;
+        zoomMode = "fit";
+        applySettings(true);
+      }));
+      zoomOut.addEventListener("click", () => setManualZoom(currentZoom - 0.1));
+      zoomIn.addEventListener("click", () => setManualZoom(currentZoom + 0.1));
+      zoomFit.addEventListener("click", () => { zoomMode = "fit"; applyToFrame(true); });
       tweaksButton.addEventListener("click", () => setPanel(panel.dataset.open !== "true"));
       closeTweaks.addEventListener("click", () => setPanel(false));
       document.getElementById("resetTweaks").addEventListener("click", () => { state = { ...DEFAULTS }; applySettings(); });
@@ -584,12 +672,18 @@
       frame.src = sourceUrl();
       frame.addEventListener("load", () => {
         loading.dataset.ready = "true";
-        applyToFrame();
-        window.setTimeout(applyToFrame, 500);
-        window.setTimeout(applyToFrame, 1600);
+        applyToFrame(true);
+        window.setTimeout(() => applyToFrame(false), 500);
+        window.setTimeout(() => applyToFrame(false), 1600);
       });
 
       updatePresentationUi();
+      updateZoomUi();
+      let resizeTimer;
+      window.addEventListener("resize", () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => applyToFrame(false), 120);
+      });
       window.addEventListener("load", () => {
         if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.8 } });
       });
@@ -597,4 +691,3 @@
   </script>
 </body>
 </html>
-
