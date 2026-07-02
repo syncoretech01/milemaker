@@ -14,21 +14,23 @@
     :root {
       --accent: #f2b84b;
       --accent-rgb: 242, 184, 75;
-      --canvas: #060708;
-      --surface: #0b0d0f;
-      --surface-2: #111419;
-      --surface-3: #181c22;
-      --line: rgba(255, 255, 255, 0.11);
-      --line-soft: rgba(255, 255, 255, 0.065);
-      --text: #f2f2ef;
-      --muted: #94999f;
-      --quiet: #60666e;
-      --panel: #e5e6e7;
+      --canvas: #050709;
+      --surface: #0a0f13;
+      --surface-2: #10171e;
+      --surface-3: #17212a;
+      --line: rgba(183, 203, 220, 0.13);
+      --line-soft: rgba(183, 203, 220, 0.07);
+      --text: #f1f4f2;
+      --muted: #98a3ad;
+      --quiet: #64717c;
+      --steel: #8fa5b8;
+      --status: #45d7a1;
+      --panel: #e2e5e6;
       --panel-text: #181a1e;
     }
 
     * { box-sizing: border-box; }
-    html { background: var(--canvas); color: var(--text); scroll-behavior: smooth; }
+    html { background: var(--canvas); color: var(--text); color-scheme: dark; scroll-behavior: smooth; }
     body {
       margin: 0;
       min-width: 320px;
@@ -39,6 +41,7 @@
       font-family: "DM Sans", Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
+    ::selection { background: rgba(var(--accent-rgb), 0.28); color: #fff; }
     button, select, a { font: inherit; }
     button, select { letter-spacing: 0; }
     a { color: inherit; }
@@ -55,7 +58,7 @@
       gap: 24px;
       padding: 12px 28px;
       border-bottom: 1px solid var(--line);
-      background: rgba(6, 7, 8, 0.94);
+      background: rgba(5, 8, 10, 0.94);
       backdrop-filter: blur(18px);
     }
     .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
@@ -69,7 +72,9 @@
       background: var(--accent);
       color: #0b0c0e;
       box-shadow: 0 12px 32px rgba(var(--accent-rgb), 0.16);
+      transition: transform 220ms ease, box-shadow 220ms ease;
     }
+    .brand:hover .brand-mark { transform: rotate(-4deg); box-shadow: 0 16px 42px rgba(var(--accent-rgb), 0.22); }
     .brand-mark svg { width: 19px; height: 19px; }
     .brand-copy { min-width: 0; }
     .brand-kicker {
@@ -123,6 +128,7 @@
     .action-button.primary:hover { background: var(--accent); color: #0d0e10; filter: brightness(1.08); }
 
     .intro-band {
+      position: relative;
       min-height: 232px;
       display: grid;
       grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
@@ -130,8 +136,28 @@
       align-items: end;
       padding: 38px 28px 34px;
       border-bottom: 1px solid var(--line);
-      background: #08090a;
+      overflow: hidden;
+      background: #080b0e;
     }
+    .intro-band::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 28px;
+      width: 72px;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0.8;
+    }
+    .intro-main,
+    .intro-overview {
+      position: relative;
+      z-index: 1;
+      will-change: transform;
+      transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .intro-main { transform: translate3d(var(--intro-main-x, 0), var(--intro-main-y, 0), 0); }
+    .intro-overview { transform: translate3d(var(--intro-copy-x, 0), var(--intro-copy-y, 0), 0); }
     .intro-index {
       margin: 0 0 18px;
       color: var(--accent);
@@ -148,7 +174,7 @@
     }
     .intro-tagline {
       margin: 14px 0 0;
-      color: #c8c9c7;
+      color: #c7cfd2;
       font-family: "Instrument Serif", serif;
       font-size: 25px;
       line-height: 1.15;
@@ -176,6 +202,8 @@
       font-size: 20px;
       font-weight: 600;
     }
+    .intro-metric:nth-child(2) dt { color: var(--steel); }
+    .intro-metric:nth-child(3) dt { color: var(--status); }
     .intro-metric dd {
       margin: 3px 0 0;
       color: var(--quiet);
@@ -184,7 +212,7 @@
       text-transform: uppercase;
     }
 
-    .canvas-section { min-height: 760px; border-bottom: 1px solid var(--line); background: #050607; }
+    .canvas-section { min-height: 760px; border-bottom: 1px solid var(--line); background: #040609; }
     .stage-shell { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-width: 0; }
     .flow-rail {
       min-width: 0;
@@ -193,7 +221,7 @@
       display: flex;
       flex-direction: column;
       border-right: 1px solid var(--line);
-      background: #080a0b;
+      background: #080c10;
     }
     .flow-rail-header {
       min-height: 58px;
@@ -260,7 +288,7 @@
       font-size: 8px;
       text-transform: uppercase;
     }
-    .rail-dot { width: 5px; height: 5px; flex: none; border-radius: 50%; background: #34d399; }
+    .rail-dot { width: 5px; height: 5px; flex: none; border-radius: 50%; background: var(--status); }
     .stage-main { min-width: 0; }
     .canvas-bar {
       min-height: 58px;
@@ -270,7 +298,7 @@
       gap: 18px;
       padding: 9px 18px;
       border-bottom: 1px solid var(--line-soft);
-      background: #090b0c;
+      background: #080d11;
     }
     .canvas-label { display: flex; align-items: center; gap: 10px; min-width: 0; }
     .live-dot {
@@ -278,7 +306,7 @@
       height: 7px;
       flex: none;
       border-radius: 50%;
-      background: #34d399;
+      background: var(--status);
       box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.09);
     }
     .canvas-name-wrap { min-width: 0; }
@@ -355,16 +383,16 @@
       height: clamp(562px, calc(100vh - 126px), 842px);
       min-height: 562px;
       overflow: hidden;
-      background: #050607;
+      background: #040609;
     }
-    .canvas-viewport iframe { display: block; width: 100%; height: 100%; border: 0; background: #07090c; }
+    .canvas-viewport iframe { display: block; width: 100%; height: 100%; border: 0; background: #06090c; }
     .canvas-loading {
       position: absolute;
       inset: 0;
       z-index: 2;
       display: grid;
       place-items: center;
-      background: #07090c;
+      background: #06090c;
       color: var(--muted);
       font-family: "Geist Mono", monospace;
       font-size: 10px;
@@ -394,7 +422,7 @@
       justify-content: space-between;
       gap: 36px;
       padding: 28px;
-      background: #08090a;
+      background: #070a0d;
     }
     .footer-brand { display: flex; align-items: flex-start; gap: 13px; max-width: 650px; }
     .footer-mark {
@@ -525,10 +553,51 @@
     .reset-button:hover { color: #17191d; }
     .reset-button svg { width: 13px; height: 13px; }
 
+    .precision-cursor {
+      --cursor-x: -80px;
+      --cursor-y: -80px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      width: 28px;
+      height: 28px;
+      display: none;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate3d(calc(var(--cursor-x) - 14px), calc(var(--cursor-y) - 14px), 0);
+      transition: opacity 140ms ease;
+      will-change: transform;
+    }
+    .precision-cursor::before,
+    .precision-cursor::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .precision-cursor::before {
+      width: 24px;
+      height: 24px;
+      border: 1px solid rgba(196, 211, 222, 0.54);
+      box-shadow: 0 0 0 1px rgba(4, 7, 9, 0.56);
+      transition: width 160ms ease, height 160ms ease, border-color 160ms ease;
+    }
+    .precision-cursor::after { width: 3px; height: 3px; background: var(--accent); }
+    .precision-cursor[data-visible="true"] { opacity: 1; }
+    .precision-cursor[data-active="true"]::before { width: 15px; height: 15px; border-color: var(--accent); }
+    .precision-cursor[data-active="true"]::after { background: var(--status); }
+
     .intro-main,
     .intro-overview { animation: reveal 600ms ease both; }
     .intro-overview { animation-delay: 90ms; }
-    @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes reveal { from { opacity: 0; } to { opacity: 1; } }
+
+    @media (hover: hover) and (pointer: fine) {
+      .precision-cursor { display: block; }
+    }
 
     @media (max-width: 1100px) {
       .stage-shell { grid-template-columns: minmax(0, 1fr); }
@@ -571,6 +640,9 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+      .precision-cursor { display: none !important; }
+      .intro-main,
+      .intro-overview { transform: none !important; }
     }
   </style>
 </head>
@@ -661,6 +733,7 @@
           </div>
         </div>
       </div>
+      <div id="precisionCursor" class="precision-cursor" aria-hidden="true"></div>
     </main>
 
     <footer class="site-footer">
@@ -794,6 +867,10 @@
       const currentScreen = document.getElementById("currentScreen");
       const previousScreen = document.getElementById("previousScreen");
       const nextScreen = document.getElementById("nextScreen");
+      const introBand = document.querySelector(".intro-band");
+      const precisionCursor = document.getElementById("precisionCursor");
+      const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
       let state = loadState();
       let zoomMode = "fit";
       let currentZoom = 1;
@@ -802,6 +879,50 @@
       let flowButtons = [];
       let currentScreenIndex = 0;
       let frameScrollTimer = 0;
+      let cursorTargetX = -80;
+      let cursorTargetY = -80;
+      let cursorX = -80;
+      let cursorY = -80;
+      let cursorAnimation = 0;
+
+      function isInteractiveTarget(target) {
+        return Boolean(target && typeof target.closest === "function" && target.closest("a, button, input, select, [role='button']"));
+      }
+
+      function drawCursor() {
+        cursorX += (cursorTargetX - cursorX) * 0.34;
+        cursorY += (cursorTargetY - cursorY) * 0.34;
+        precisionCursor.style.setProperty("--cursor-x", cursorX + "px");
+        precisionCursor.style.setProperty("--cursor-y", cursorY + "px");
+        if (Math.abs(cursorTargetX - cursorX) > 0.1 || Math.abs(cursorTargetY - cursorY) > 0.1) {
+          cursorAnimation = window.requestAnimationFrame(drawCursor);
+        } else {
+          cursorAnimation = 0;
+        }
+      }
+
+      function updateCursor(x, y, visible, active) {
+        if (!finePointer.matches || reducedMotion.matches) return;
+        cursorTargetX = x;
+        cursorTargetY = y;
+        precisionCursor.dataset.visible = String(visible);
+        precisionCursor.dataset.active = String(active);
+        if (!cursorAnimation) cursorAnimation = window.requestAnimationFrame(drawCursor);
+      }
+
+      function hideCursor() {
+        precisionCursor.dataset.visible = "false";
+      }
+
+      function bindFramePointer(win, doc) {
+        if (!finePointer.matches || reducedMotion.matches || doc.__milemakerPointerBound) return;
+        doc.__milemakerPointerBound = true;
+        doc.addEventListener("mousemove", (event) => {
+          const rect = frame.getBoundingClientRect();
+          updateCursor(rect.left + event.clientX, rect.top + event.clientY, true, isInteractiveTarget(event.target));
+        }, { passive: true });
+        doc.addEventListener("mouseleave", hideCursor, { passive: true });
+      }
 
       function loadState() {
         try {
@@ -985,6 +1106,7 @@
           const win = frame.contentWindow;
           const doc = frame.contentDocument;
           if (!win || !doc || !doc.documentElement) return;
+          bindFramePointer(win, doc);
           const theme = THEME_MAP[state.theme] || THEME_MAP[DEFAULTS.theme];
           doc.documentElement.setAttribute("data-mm-theme", theme.accent);
           doc.documentElement.setAttribute("data-mm-base", theme.base);
@@ -1057,6 +1179,27 @@
 
       updatePresentationUi();
       updateZoomUi();
+      document.addEventListener("pointermove", (event) => {
+        updateCursor(event.clientX, event.clientY, true, isInteractiveTarget(event.target));
+      }, { passive: true });
+      document.documentElement.addEventListener("mouseleave", hideCursor, { passive: true });
+      window.addEventListener("blur", hideCursor);
+      introBand.addEventListener("pointermove", (event) => {
+        if (!finePointer.matches || reducedMotion.matches) return;
+        const rect = introBand.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+        introBand.style.setProperty("--intro-main-x", x * 5 + "px");
+        introBand.style.setProperty("--intro-main-y", y * 3 + "px");
+        introBand.style.setProperty("--intro-copy-x", x * -3 + "px");
+        introBand.style.setProperty("--intro-copy-y", y * -2 + "px");
+      }, { passive: true });
+      introBand.addEventListener("pointerleave", () => {
+        introBand.style.setProperty("--intro-main-x", "0px");
+        introBand.style.setProperty("--intro-main-y", "0px");
+        introBand.style.setProperty("--intro-copy-x", "0px");
+        introBand.style.setProperty("--intro-copy-y", "0px");
+      }, { passive: true });
       let resizeTimer;
       window.addEventListener("resize", () => {
         window.clearTimeout(resizeTimer);
